@@ -32,6 +32,7 @@ from labelme.widgets import ToolBar
 from labelme.widgets import UniqueLabelQListWidget
 from labelme.widgets import ZoomWidget
 
+from shapely.geometry import Polygon
 
 # FIXME
 # - [medium] Set max zoom value to something big enough for FitWidth/Window
@@ -1091,6 +1092,14 @@ class MainWindow(QtWidgets.QMainWindow):
             shape.selected = False
         self.labelList.clearSelection()
         self.canvas.selectedShapes = selected_shapes
+
+        for shape in self.canvas.selectedShapes:
+            if shape.label == "nucleus":
+                for global_shape in self.canvas.shapes:
+                    if global_shape.label == "nor":
+                        if shape.containsPoint(global_shape.points[0]):
+                            selected_shapes.append(global_shape)
+
         for shape in self.canvas.selectedShapes:
             shape.selected = True
             item = self.labelList.findItemByShape(shape)
