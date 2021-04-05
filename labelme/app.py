@@ -446,6 +446,14 @@ class MainWindow(QtWidgets.QMainWindow):
             tip=self.tr("Show tutorial page"),
         )
 
+        destructiveMode = action(
+            self.tr("&Destructive\nmode"),
+            functools.partial(self.toggleDestructiveMode),
+            shortcut=["destructive_mode"],
+            tip=self.tr("Enable deletion of polygons with a single click"),
+            enabled=True,
+        )
+
         zoom = QtWidgets.QWidgetAction(self)
         zoom.setDefaultWidget(self.zoomWidget)
         self.zoomWidget.setWhatsThis(
@@ -592,6 +600,7 @@ class MainWindow(QtWidgets.QMainWindow):
             zoomActions=zoomActions,
             openNextImg=openNextImg,
             openPrevImg=openPrevImg,
+            destructiveMode=destructiveMode,
             fileMenuActions=(open_, opendir, save, saveAs, close, quit),
             tool=(),
             # XXX: need to add some actions here to activate the shortcut
@@ -606,6 +615,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 addPointToEdge,
                 None,
                 toggle_keep_prev_mode,
+                None,
+                destructiveMode
             ),
             # menu shown at right click
             menu=(
@@ -1100,16 +1111,19 @@ class MainWindow(QtWidgets.QMainWindow):
                         if shape.containsPoint(global_shape.points[0]):
                             selected_shapes.append(global_shape)
 
-        for shape in self.canvas.selectedShapes:
-            shape.selected = True
-            item = self.labelList.findItemByShape(shape)
-            self.labelList.selectItem(item)
-            self.labelList.scrollToItem(item)
-        self._noSelectionSlot = False
-        n_selected = len(selected_shapes)
-        self.actions.delete.setEnabled(n_selected)
-        self.actions.copy.setEnabled(n_selected)
-        self.actions.edit.setEnabled(n_selected == 1)
+        if self._config["destructive_mode_state"]:
+            self.deleteOnClick()
+        else:
+            for shape in self.canvas.selectedShapes:
+                shape.selected = True
+                item = self.labelList.findItemByShape(shape)
+                self.labelList.selectItem(item)
+                self.labelList.scrollToItem(item)
+            self._noSelectionSlot = False
+            n_selected = len(selected_shapes)
+            self.actions.delete.setEnabled(n_selected)
+            self.actions.copy.setEnabled(n_selected)
+            self.actions.edit.setEnabled(n_selected == 1)
 
     def addLabel(self, shape):
         if shape.group_id is None:
@@ -1419,7 +1433,7 @@ class MainWindow(QtWidgets.QMainWindow):
         brightness = dialog.slider_brightness.value()
         contrast = dialog.slider_contrast.value()
         self.brightnessContrast_values[self.filename] = (brightness, contrast)
-    
+
     def togglePolygons(self, value):
         if self._config["polygons_state"]:
             self._config["polygons_state"] = False
@@ -1427,6 +1441,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self._config["polygons_state"] = True
         for item in self.labelList:
             item.setCheckState(Qt.Checked if self._config["polygons_state"] else Qt.Unchecked)
+
+    def toggleDestructiveMode(self):
+        if self._config["destructive_mode_state"]:
+            self._config["destructive_mode_state"] = False
+        else:
+            self._config["destructive_mode_state"] = True
 
     def loadFile(self, filename=None):
         """Load the specified file, or the last opened file if None."""
@@ -1914,7 +1934,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 for action in self.actions.onShapesPresent:
                     action.setEnabled(False)
 
-    def deleteOnClick(self, selected_shapes):
+    def deleteOnClick(self):
         self.remLabels(self.canvas.deleteSelected())
         self.setDirty()
         if self.noShapes():
