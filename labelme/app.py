@@ -379,6 +379,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.tr("Delete the selected polygons"),
             enabled=False,
         )
+
         copy = action(
             self.tr("Duplicate Polygons"),
             self.copySelectedShape,
@@ -423,10 +424,12 @@ class MainWindow(QtWidgets.QMainWindow):
         hideAll = action(
             self.tr("&Hide\nPolygons"),
             functools.partial(self.togglePolygons, False),
+            shortcuts["toggle_polygons"],
             icon="eye",
             tip=self.tr("Hide all polygons"),
             enabled=False,
         )
+
         showAll = action(
             self.tr("&Show\nPolygons"),
             functools.partial(self.togglePolygons, True),
@@ -1407,10 +1410,14 @@ class MainWindow(QtWidgets.QMainWindow):
         brightness = dialog.slider_brightness.value()
         contrast = dialog.slider_contrast.value()
         self.brightnessContrast_values[self.filename] = (brightness, contrast)
-
+    
     def togglePolygons(self, value):
+        if self._config["polygons_state"]:
+            self._config["polygons_state"] = False
+        else:
+            self._config["polygons_state"] = True
         for item in self.labelList:
-            item.setCheckState(Qt.Checked if value else Qt.Unchecked)
+            item.setCheckState(Qt.Checked if self._config["polygons_state"] else Qt.Unchecked)
 
     def loadFile(self, filename=None):
         """Load the specified file, or the last opened file if None."""
@@ -1897,6 +1904,13 @@ class MainWindow(QtWidgets.QMainWindow):
             if self.noShapes():
                 for action in self.actions.onShapesPresent:
                     action.setEnabled(False)
+
+    def deleteOnClick(self, selected_shapes):
+        self.remLabels(self.canvas.deleteSelected())
+        self.setDirty()
+        if self.noShapes():
+            for action in self.actions.onShapesPresent:
+                action.setEnabled(False)
 
     def copyShape(self):
         self.canvas.endMove(copy=True)
