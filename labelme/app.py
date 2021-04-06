@@ -32,7 +32,6 @@ from labelme.widgets import ToolBar
 from labelme.widgets import UniqueLabelQListWidget
 from labelme.widgets import ZoomWidget
 
-from shapely.geometry import Polygon
 
 # FIXME
 # - [medium] Set max zoom value to something big enough for FitWidth/Window
@@ -381,6 +380,17 @@ class MainWindow(QtWidgets.QMainWindow):
             enabled=False,
         )
 
+        destructiveMode = action(
+            self.tr("&Destructive\nmode"),
+            functools.partial(self.toggleDestructiveMode),
+            shortcuts["destructive_mode"],
+            icon="destructive",
+            tip=self.tr("Enable deletion of polygons with a single click"),
+            enabled=True,
+            checkable=True,
+            checked=self._config["destructive_mode_state"],
+        )
+
         copy = action(
             self.tr("Duplicate Polygons"),
             self.copySelectedShape,
@@ -422,20 +432,12 @@ class MainWindow(QtWidgets.QMainWindow):
             enabled=False,
         )
 
-        hideAll = action(
-            self.tr("&Hide\nPolygons"),
-            functools.partial(self.togglePolygons, False),
+        togglePolygons = action(
+            self.tr("&Toogle\nPolygons"),
+            functools.partial(self.togglePolygons),
             shortcuts["toggle_polygons"],
-            icon="eye",
-            tip=self.tr("Hide all polygons"),
-            enabled=False,
-        )
-
-        showAll = action(
-            self.tr("&Show\nPolygons"),
-            functools.partial(self.togglePolygons, True),
-            icon="eye",
-            tip=self.tr("Show all polygons"),
+            icon="destructive",
+            tip=self.tr("Toggle all polygons"),
             enabled=False,
         )
 
@@ -444,14 +446,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.tutorial,
             icon="help",
             tip=self.tr("Show tutorial page"),
-        )
-
-        destructiveMode = action(
-            self.tr("&Destructive\nmode"),
-            functools.partial(self.toggleDestructiveMode),
-            shortcut=["destructive_mode"],
-            tip=self.tr("Enable deletion of polygons with a single click"),
-            enabled=True,
         )
 
         zoom = QtWidgets.QWidgetAction(self)
@@ -646,7 +640,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 editMode,
                 brightnessContrast,
             ),
-            onShapesPresent=(saveAs, hideAll, showAll),
+            onShapesPresent=(saveAs, togglePolygons),
         )
 
         self.canvas.edgeSelected.connect(self.canvasShapeEdgeSelected)
@@ -691,8 +685,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 None,
                 fill_drawing,
                 None,
-                hideAll,
-                showAll,
+                togglePolygons,
                 None,
                 zoomIn,
                 zoomOut,
@@ -731,6 +724,7 @@ class MainWindow(QtWidgets.QMainWindow):
             editMode,
             copy,
             delete,
+            destructiveMode,
             undo,
             brightnessContrast,
             None,
@@ -1434,7 +1428,7 @@ class MainWindow(QtWidgets.QMainWindow):
         contrast = dialog.slider_contrast.value()
         self.brightnessContrast_values[self.filename] = (brightness, contrast)
 
-    def togglePolygons(self, value):
+    def togglePolygons(self):
         if self._config["polygons_state"]:
             self._config["polygons_state"] = False
         else:
