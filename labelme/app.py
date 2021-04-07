@@ -1098,12 +1098,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.labelList.clearSelection()
         self.canvas.selectedShapes = selected_shapes
 
-        for shape in self.canvas.selectedShapes:
-            if shape.label == "nucleus":
-                for global_shape in self.canvas.shapes:
-                    if global_shape.label == "nor":
-                        if shape.containsPoint(global_shape.points[0]):
-                            selected_shapes.append(global_shape)
+        for selected_shape in self.canvas.selectedShapes:
+            for canvas_shape in self.canvas.shapes:
+                if not selected_shape == canvas_shape:
+                    if selected_shape.containsPoint(canvas_shape.points[0]):
+                        selected_shapes.append(canvas_shape)
 
         if self._config["destructive_mode_state"]:
             self.deleteOnClick()
