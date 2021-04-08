@@ -1096,13 +1096,14 @@ class MainWindow(QtWidgets.QMainWindow):
         for shape in self.canvas.selectedShapes:
             shape.selected = False
         self.labelList.clearSelection()
-        self.canvas.selectedShapes = selected_shapes
-
-        for selected_shape in self.canvas.selectedShapes:
+        
+        for selected_shape in selected_shapes:
             for canvas_shape in self.canvas.shapes:
                 if not selected_shape == canvas_shape:
-                    if selected_shape.containsPoint(canvas_shape.points[0]):
+                    if selected_shape.containsPoint(canvas_shape.points[0]) and canvas_shape not in selected_shapes:
                         selected_shapes.append(canvas_shape)
+        
+        self.canvas.selectedShapes = selected_shapes
 
         if self._config["destructive_mode_state"]:
             self.deleteOnClick()
