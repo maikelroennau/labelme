@@ -1084,7 +1084,16 @@ class MainWindow(QtWidgets.QMainWindow):
         if not self.mayContinue():
             return
 
-        currIndex = self.imageList.index(str(item.text()))
+        if self._config["last_file"]:
+            try:
+                currIndex = self.imageList.index(self._config["last_file"].replace("/", "\\"))
+            except Exception as e:
+                currIndex = 0
+            finally:
+                self._config["last_file"] = None
+        else:
+            currIndex = self.imageList.index(str(item.text()))
+
         if currIndex < len(self.imageList):
             filename = self.imageList[currIndex]
             if filename:
@@ -1096,13 +1105,13 @@ class MainWindow(QtWidgets.QMainWindow):
         for shape in self.canvas.selectedShapes:
             shape.selected = False
         self.labelList.clearSelection()
-        
+
         for selected_shape in selected_shapes:
             for canvas_shape in self.canvas.shapes:
                 if not selected_shape == canvas_shape:
                     if selected_shape.containsPoint(canvas_shape.points[0]) and canvas_shape not in selected_shapes:
                         selected_shapes.append(canvas_shape)
-        
+
         self.canvas.selectedShapes = selected_shapes
 
         if self._config["destructive_mode_state"]:
@@ -1627,6 +1636,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("recentFiles", self.recentFiles)
         # ask the use for where to save the labels
         # self.settings.setValue('window/geometry', self.saveGeometry())
+        self.saveLastWorkingFile()
 
     def dragEnterEvent(self, event):
         extensions = [
@@ -1761,6 +1771,18 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.imageList.index(current_filename)
             )
             self.fileListWidget.repaint()
+
+    def saveLastWorkingFile(self):
+        user_config_file = osp.join(osp.expanduser("~"), ".labelmerc")
+        if self.filename is not None and osp.isfile(user_config_file):
+            rows = open(user_config_file, "r").readlines()
+
+            for i, row in enumerate(rows):
+                if row.startswith("last_file:"):
+                    rows[i] = "last_file: " + self.filename.replace("\\", "/") + "\n"
+                    break
+
+            open(user_config_file, "w").writelines(rows)
 
     def saveFile(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"

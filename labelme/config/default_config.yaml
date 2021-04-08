@@ -21,6 +21,7 @@ label_colors: null
 
 polygons_state: true
 destructive_mode_state: false
+last_file: null
 
 shape:
   # drawing
