@@ -111,8 +111,8 @@ class Canvas(QtWidgets.QWidget):
         shapesBackup = []
         for shape in self.shapes:
             shapesBackup.append(shape.copy())
-        if len(self.shapesBackups) >= 10:
-            self.shapesBackups = self.shapesBackups[-9:]
+        if len(self.shapesBackups) >= 50:
+            self.shapesBackups = self.shapesBackups[-49:]
         if override:
             self.shapesBackups.append(shapesBackup)
         elif not len(self.selectedShapes) > 0 or len(self.shapesBackups) == 0:
