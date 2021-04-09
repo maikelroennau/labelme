@@ -920,6 +920,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.labelList.clear()
         self.loadShapes(self.canvas.shapes)
         self.actions.undo.setEnabled(self.canvas.isShapeRestorable)
+        self.setDirty()
 
     def tutorial(self):
         url = "https://github.com/wkentaro/labelme/tree/master/examples/tutorial"  # NOQA
@@ -1106,27 +1107,28 @@ class MainWindow(QtWidgets.QMainWindow):
             shape.selected = False
         self.labelList.clearSelection()
 
-        for selected_shape in selected_shapes:
-            for canvas_shape in self.canvas.shapes:
-                if not selected_shape == canvas_shape:
-                    if selected_shape.containsPoint(canvas_shape.points[0]) and canvas_shape not in selected_shapes:
-                        selected_shapes.append(canvas_shape)
+        if self._config["destructive_mode_state"]:
+            for selected_shape in selected_shapes:
+                for canvas_shape in self.canvas.shapes:
+                    if not selected_shape == canvas_shape:
+                        if selected_shape.containsPoint(canvas_shape.points[0]) and canvas_shape not in selected_shapes:
+                            selected_shapes.append(canvas_shape)
 
         self.canvas.selectedShapes = selected_shapes
 
+        for shape in self.canvas.selectedShapes:
+            shape.selected = True
+            item = self.labelList.findItemByShape(shape)
+            self.labelList.selectItem(item)
+            self.labelList.scrollToItem(item)
+        self._noSelectionSlot = False
+        n_selected = len(selected_shapes)
+        self.actions.delete.setEnabled(n_selected)
+        self.actions.copy.setEnabled(n_selected)
+        self.actions.edit.setEnabled(n_selected == 1)
+
         if self._config["destructive_mode_state"]:
             self.deleteOnClick()
-        else:
-            for shape in self.canvas.selectedShapes:
-                shape.selected = True
-                item = self.labelList.findItemByShape(shape)
-                self.labelList.selectItem(item)
-                self.labelList.scrollToItem(item)
-            self._noSelectionSlot = False
-            n_selected = len(selected_shapes)
-            self.actions.delete.setEnabled(n_selected)
-            self.actions.copy.setEnabled(n_selected)
-            self.actions.edit.setEnabled(n_selected == 1)
 
     def addLabel(self, shape):
         if shape.group_id is None:
@@ -1951,11 +1953,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     action.setEnabled(False)
 
     def deleteOnClick(self):
+        self._config["destructive_mode_state"] = False
         self.remLabels(self.canvas.deleteSelected())
         self.setDirty()
         if self.noShapes():
             for action in self.actions.onShapesPresent:
                 action.setEnabled(False)
+        self._config["destructive_mode_state"] = True
 
     def copyShape(self):
         self.canvas.endMove(copy=True)

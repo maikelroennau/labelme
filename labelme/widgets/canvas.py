@@ -107,13 +107,16 @@ class Canvas(QtWidgets.QWidget):
             raise ValueError("Unsupported createMode: %s" % value)
         self._createMode = value
 
-    def storeShapes(self):
+    def storeShapes(self, override=False):
         shapesBackup = []
         for shape in self.shapes:
             shapesBackup.append(shape.copy())
         if len(self.shapesBackups) >= 10:
             self.shapesBackups = self.shapesBackups[-9:]
-        self.shapesBackups.append(shapesBackup)
+        if override:
+            self.shapesBackups.append(shapesBackup)
+        elif not len(self.selectedShapes) > 0 or len(self.shapesBackups) == 0:
+            self.shapesBackups.append(shapesBackup)
 
     @property
     def isShapeRestorable(self):
@@ -396,7 +399,7 @@ class Canvas(QtWidgets.QWidget):
                 self.shapesBackups[-1][index].points
                 != self.shapes[index].points
             ):
-                self.storeShapes()
+                self.storeShapes(override=True)
                 self.shapeMoved.emit()
 
             self.movingShape = False
@@ -519,7 +522,6 @@ class Canvas(QtWidgets.QWidget):
             for shape in self.selectedShapes:
                 self.shapes.remove(shape)
                 deleted_shapes.append(shape)
-            self.storeShapes()
             self.selectedShapes = []
             self.update()
         return deleted_shapes
