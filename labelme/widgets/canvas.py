@@ -20,6 +20,9 @@ CURSOR_GRAB = QtCore.Qt.OpenHandCursor
 
 class Canvas(QtWidgets.QWidget):
 
+    CURSOR_DESTRUCTIVE = QtCore.Qt.CrossCursor
+    DESTRUCTIVE_MODE_STATE = False
+
     zoomRequest = QtCore.Signal(int, QtCore.QPoint)
     scrollRequest = QtCore.Signal(int, int)
     newShape = QtCore.Signal()
@@ -252,6 +255,9 @@ class Canvas(QtWidgets.QWidget):
                 self.movingShape = True
             return
 
+        if self.DESTRUCTIVE_MODE_STATE:
+            self.overrideCursor(self.CURSOR_DESTRUCTIVE)
+
         # Just hovering over the canvas, 2 possibilities:
         # - Highlight shapes
         # - Highlight vertex
@@ -269,9 +275,10 @@ class Canvas(QtWidgets.QWidget):
                 self.prevhShape = self.hShape = shape
                 self.prevhEdge = self.hEdge = index_edge
                 shape.highlightVertex(index, shape.MOVE_VERTEX)
-                self.overrideCursor(CURSOR_POINT)
-                self.setToolTip(self.tr("Click & drag to move point"))
-                self.setStatusTip(self.toolTip())
+                if not self.CURSOR_DESTRUCTIVE:
+                    self.overrideCursor(CURSOR_POINT)
+                    self.setToolTip(self.tr("Click & drag to move point"))
+                    self.setStatusTip(self.toolTip())
                 self.update()
                 break
             elif shape.containsPoint(pos):
@@ -285,7 +292,8 @@ class Canvas(QtWidgets.QWidget):
                     self.tr("Click & drag to move shape '%s'") % shape.label
                 )
                 self.setStatusTip(self.toolTip())
-                self.overrideCursor(CURSOR_GRAB)
+                if not self.DESTRUCTIVE_MODE_STATE:
+                    self.overrideCursor(CURSOR_GRAB)
                 self.update()
                 break
         else:  # Nothing found, clear highlights, reset state.

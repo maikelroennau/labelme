@@ -1450,8 +1450,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def toggleDestructiveMode(self):
         if self._config["destructive_mode_state"]:
             self._config["destructive_mode_state"] = False
+            self.canvas.DESTRUCTIVE_MODE_STATE = self._config["destructive_mode_state"]
+            self.canvas.restoreCursor()
         else:
             self._config["destructive_mode_state"] = True
+            self.canvas.DESTRUCTIVE_MODE_STATE = self._config["destructive_mode_state"]
+            self.canvas.overrideCursor(self.canvas.CURSOR_DESTRUCTIVE)
 
     def loadFile(self, filename=None):
         """Load the specified file, or the last opened file if None."""
