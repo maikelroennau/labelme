@@ -20,7 +20,7 @@ shift_auto_shape_color: 0
 label_colors: null
 
 polygons_state: true
-destructive_mode_state: false
+sticky_mode_state: false
 destructive_click_state: false
 last_file: null
 
@@ -104,4 +104,4 @@ shortcuts:
   add_point_to_edge: Ctrl+Shift+P
   edit_label: Ctrl+E
   toggle_keep_prev_mode: Ctrl+P
-  destructive_mode: T
+  sticky_mode: S

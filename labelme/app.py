@@ -382,15 +382,15 @@ class MainWindow(QtWidgets.QMainWindow):
             enabled=False,
         )
 
-        destructiveMode = action(
-            self.tr("&Destructive\nmode"),
-            functools.partial(self.toggleDestructiveMode),
-            shortcuts["destructive_mode"],
-            icon="destructive",
+        stickyMode = action(
+            self.tr("&Sticky\nmode"),
+            functools.partial(self.toggleStickyMode),
+            shortcuts["sticky_mode"],
+            icon="sticky",
             tip=self.tr("Enable deletion of polygons with a single click"),
             enabled=True,
             checkable=True,
-            checked=self._config["destructive_mode_state"],
+            checked=self._config["sticky_mode_state"],
         )
 
         copy = action(
@@ -438,7 +438,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.tr("&Toogle\nPolygons"),
             functools.partial(self.togglePolygons),
             shortcuts["toggle_polygons"],
-            icon="destructive",
+            icon="eye",
             tip=self.tr("Toggle all polygons"),
             enabled=False,
         )
@@ -596,7 +596,7 @@ class MainWindow(QtWidgets.QMainWindow):
             zoomActions=zoomActions,
             openNextImg=openNextImg,
             openPrevImg=openPrevImg,
-            destructiveMode=destructiveMode,
+            stickyMode=stickyMode,
             fileMenuActions=(open_, opendir, save, saveAs, close, quit),
             tool=(),
             # XXX: need to add some actions here to activate the shortcut
@@ -612,7 +612,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 None,
                 toggle_keep_prev_mode,
                 None,
-                destructiveMode
+                stickyMode
             ),
             # menu shown at right click
             menu=(
@@ -726,7 +726,7 @@ class MainWindow(QtWidgets.QMainWindow):
             editMode,
             copy,
             delete,
-            destructiveMode,
+            stickyMode,
             undo,
             brightnessContrast,
             None,
@@ -1112,7 +1112,7 @@ class MainWindow(QtWidgets.QMainWindow):
             shape.selected = False
         self.labelList.clearSelection()
         
-        if self._config["destructive_mode_state"] or self._config["destructive_click_state"]:
+        if self._config["sticky_mode_state"] or self._config["destructive_click_state"]:
             for selected_shape in selected_shapes:
                 for canvas_shape in self.canvas.shapes:
                     if not selected_shape == canvas_shape:
@@ -1132,7 +1132,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actions.copy.setEnabled(n_selected)
         self.actions.edit.setEnabled(n_selected == 1)
 
-        if self._config["destructive_mode_state"] or self._config["destructive_click_state"]:
+        if self._config["destructive_click_state"]:
             self._config["destructive_click_state"] = False
             self.deleteOnClick()
 
@@ -1453,15 +1453,15 @@ class MainWindow(QtWidgets.QMainWindow):
         for item in self.labelList:
             item.setCheckState(Qt.Checked if self._config["polygons_state"] else Qt.Unchecked)
 
-    def toggleDestructiveMode(self):
-        if self._config["destructive_mode_state"]:
-            self._config["destructive_mode_state"] = False
-            self.canvas.DESTRUCTIVE_MODE_STATE = self._config["destructive_mode_state"]
+    def toggleStickyMode(self):
+        if self._config["sticky_mode_state"]:
+            self._config["sticky_mode_state"] = False
+            self.canvas.STICKY_MODE_STATE = self._config["sticky_mode_state"]
             self.canvas.restoreCursor()
         else:
-            self._config["destructive_mode_state"] = True
-            self.canvas.DESTRUCTIVE_MODE_STATE = self._config["destructive_mode_state"]
-            self.canvas.overrideCursor(self.canvas.CURSOR_DESTRUCTIVE)
+            self._config["sticky_mode_state"] = True
+            self.canvas.STICKY_MODE_STATE = self._config["sticky_mode_state"]
+            self.canvas.overrideCursor(self.canvas.CURSOR_STICKY)
 
     def loadFile(self, filename=None):
         """Load the specified file, or the last opened file if None."""
@@ -1963,17 +1963,11 @@ class MainWindow(QtWidgets.QMainWindow):
                     action.setEnabled(False)
 
     def deleteOnClick(self):
-        restore_destructive_mode = False
-        if self._config["destructive_mode_state"]:
-            self._config["destructive_mode_state"] = False
-            restore_destructive_mode = True
         self.remLabels(self.canvas.deleteSelected())
         self.setDirty()
         if self.noShapes():
             for action in self.actions.onShapesPresent:
                 action.setEnabled(False)
-        if restore_destructive_mode:
-            self._config["destructive_mode_state"] = True
 
     def copyShape(self):
         self.canvas.endMove(copy=True)
