@@ -185,6 +185,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.canvas.selectionChanged.connect(self.shapeSelectionChanged)
         self.canvas.drawingPolygon.connect(self.toggleDrawingSensitive)
 
+        self.canvas.destructiveClick.connect(self.destructiveClick)
+
         self.setCentralWidget(scrollArea)
 
         features = QtWidgets.QDockWidget.DockWidgetFeatures()
@@ -1100,14 +1102,17 @@ class MainWindow(QtWidgets.QMainWindow):
             if filename:
                 self.loadFile(filename)
 
+    def destructiveClick(self):
+        self._config["destructive_click_state"] = True
+
     # React to canvas signals.
     def shapeSelectionChanged(self, selected_shapes):
         self._noSelectionSlot = True
         for shape in self.canvas.selectedShapes:
             shape.selected = False
         self.labelList.clearSelection()
-
-        if self._config["destructive_mode_state"]:
+        
+        if self._config["destructive_mode_state"] or self._config["destructive_click_state"]:
             for selected_shape in selected_shapes:
                 for canvas_shape in self.canvas.shapes:
                     if not selected_shape == canvas_shape:
@@ -1127,7 +1132,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actions.copy.setEnabled(n_selected)
         self.actions.edit.setEnabled(n_selected == 1)
 
-        if self._config["destructive_mode_state"]:
+        if self._config["destructive_mode_state"] or self._config["destructive_click_state"]:
+            self._config["destructive_click_state"] = False
             self.deleteOnClick()
 
     def addLabel(self, shape):
@@ -1957,13 +1963,17 @@ class MainWindow(QtWidgets.QMainWindow):
                     action.setEnabled(False)
 
     def deleteOnClick(self):
-        self._config["destructive_mode_state"] = False
+        restore_destructive_mode = False
+        if self._config["destructive_mode_state"]:
+            self._config["destructive_mode_state"] = False
+            restore_destructive_mode = True
         self.remLabels(self.canvas.deleteSelected())
         self.setDirty()
         if self.noShapes():
             for action in self.actions.onShapesPresent:
                 action.setEnabled(False)
-        self._config["destructive_mode_state"] = True
+        if restore_destructive_mode:
+            self._config["destructive_mode_state"] = True
 
     def copyShape(self):
         self.canvas.endMove(copy=True)

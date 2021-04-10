@@ -31,6 +31,7 @@ class Canvas(QtWidgets.QWidget):
     drawingPolygon = QtCore.Signal(bool)
     edgeSelected = QtCore.Signal(bool, object)
     vertexSelected = QtCore.Signal(bool)
+    destructiveClick = QtCore.Signal()
 
     CREATE, EDIT = 0, 1
 
@@ -327,6 +328,9 @@ class Canvas(QtWidgets.QWidget):
         self.hEdge = None
         self.movingShape = True  # Save changes
 
+    def destructiveMouseClick(self):
+        self.destructiveClick.emit()
+
     def mousePressEvent(self, ev):
         if QT5:
             pos = self.transformPos(ev.localPos())
@@ -371,6 +375,11 @@ class Canvas(QtWidgets.QWidget):
         elif ev.button() == QtCore.Qt.RightButton and self.editing():
             group_mode = int(ev.modifiers()) == QtCore.Qt.ControlModifier
             self.selectShapePoint(pos, multiple_selection_mode=group_mode)
+            self.prevPoint = pos
+            self.repaint()
+        elif ev.button() == QtCore.Qt.MidButton:
+            self.destructiveMouseClick()
+            self.selectShapePoint(pos, multiple_selection_mode=False)
             self.prevPoint = pos
             self.repaint()
 
