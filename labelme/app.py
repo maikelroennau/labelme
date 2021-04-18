@@ -1919,6 +1919,7 @@ class MainWindow(QtWidgets.QMainWindow):
             mb.Save,
         )
         if answer == mb.Discard:
+            self.setClean()
             return True
         elif answer == mb.Save:
             self.saveFile()
