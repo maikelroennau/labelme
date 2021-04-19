@@ -22,6 +22,7 @@ label_colors: null
 polygons_state: true
 sticky_mode_state: false
 destructive_click_state: false
+label_validation_status: false
 last_file: null
 
 shape:
@@ -105,3 +106,4 @@ shortcuts:
   edit_label: Ctrl+E
   toggle_keep_prev_mode: Ctrl+P
   sticky_mode: S
+  validate_proposed_label: V

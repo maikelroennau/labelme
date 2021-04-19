@@ -72,6 +72,7 @@ class LabelFile(object):
             "version",
             "imageData",
             "imagePath",
+            "validated",
             "shapes",  # polygonal annotations
             "flags",  # image level flags
             "imageHeight",
@@ -167,6 +168,7 @@ class LabelFile(object):
     def save(
         self,
         filename,
+        validated,
         shapes,
         imagePath,
         imageHeight,
@@ -187,6 +189,7 @@ class LabelFile(object):
         data = dict(
             version=__version__,
             flags=flags,
+            validated=validated,
             shapes=shapes,
             imagePath=imagePath,
             imageData=imageData,
@@ -206,3 +209,15 @@ class LabelFile(object):
     @staticmethod
     def is_label_file(filename):
         return osp.splitext(filename)[1].lower() == LabelFile.suffix
+
+    @staticmethod
+    def is_validated(filename):
+        try:
+            with open(filename, "r") as f:
+                data = json.load(f)
+                if "validated" in data:
+                    if isinstance(data["validated"], bool):
+                        return data["validated"]
+                return False
+        except Exception as e:
+            return False

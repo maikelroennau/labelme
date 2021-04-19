@@ -393,6 +393,17 @@ class MainWindow(QtWidgets.QMainWindow):
             checked=self._config["sticky_mode_state"],
         )
 
+        validateProposedLabel = action(
+            self.tr("Validate"),
+            self.toggleValidateProposedLabel,
+            shortcuts["validate_proposed_label"],
+            icon="validate",
+            tip=self.tr("Mark this file label as validated"),
+            enabled=True,
+            checkable=True,
+            checked=False
+        )
+
         copy = action(
             self.tr("Duplicate Polygons"),
             self.copySelectedShape,
@@ -597,6 +608,7 @@ class MainWindow(QtWidgets.QMainWindow):
             openNextImg=openNextImg,
             openPrevImg=openPrevImg,
             stickyMode=stickyMode,
+            validateProposedLabel=validateProposedLabel,
             fileMenuActions=(open_, opendir, save, saveAs, close, quit),
             tool=(),
             # XXX: need to add some actions here to activate the shortcut
@@ -612,7 +624,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 None,
                 toggle_keep_prev_mode,
                 None,
-                stickyMode
+                validateProposedLabel,
+                stickyMode,
             ),
             # menu shown at right click
             menu=(
@@ -726,6 +739,7 @@ class MainWindow(QtWidgets.QMainWindow):
             editMode,
             copy,
             delete,
+            validateProposedLabel,
             stickyMode,
             undo,
             brightnessContrast,
@@ -1269,6 +1283,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 os.makedirs(osp.dirname(filename))
             lf.save(
                 filename=filename,
+                validated=self._config["label_validation_status"],
                 shapes=shapes,
                 imagePath=imagePath,
                 imageData=imageData,
@@ -1463,6 +1478,18 @@ class MainWindow(QtWidgets.QMainWindow):
             self.canvas.STICKY_MODE_STATE = self._config["sticky_mode_state"]
             self.canvas.overrideCursor(self.canvas.CURSOR_STICKY)
 
+    def toggleValidateProposedLabel(self):
+        item = self.fileListWidget.selectedItems()[0]
+        if self._config["label_validation_status"]:
+            self._config["label_validation_status"] = False
+            item.setBackground(QtGui.QColor("white"))
+        else:
+            self._config["label_validation_status"] = True
+            item.setBackground(QtGui.QColor("light green"))
+        
+        if self._config["label_validation_status"] != LabelFile.is_validated(self.labelFile.filename):
+            self.setDirty()
+
     def loadFile(self, filename=None):
         """Load the specified file, or the last opened file if None."""
         # changing fileListWidget loads file
@@ -1587,6 +1614,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.brightnessContrast_values[self.filename] = (brightness, contrast)
         if brightness is not None or contrast is not None:
             dialog.onNewValue(None)
+        if LabelFile.is_validated(label_file):
+            self.actions.validateProposedLabel.setChecked(True)
+            self._config["label_validation_status"] = True
+        else:
+            self.actions.validateProposedLabel.setChecked(False)
+            self._config["label_validation_status"] = False
         self.paintCanvas()
         self.addRecentFile(self.filename)
         self.toggleActions(True)
@@ -2069,6 +2102,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 item.setCheckState(Qt.Checked)
             else:
                 item.setCheckState(Qt.Unchecked)
+            if LabelFile.is_validated(label_file):
+                item.setBackground(QtGui.QColor("light green"))
             self.fileListWidget.addItem(item)
         self.openNextImg(load=load)
 
