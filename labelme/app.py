@@ -2087,7 +2087,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lastOpenDir = dirpath
         self.filename = None
         self.fileListWidget.clear()
-        for filename in self.scanAllImages(dirpath):
+        update_selected_file = True
+        all_images = self.scanAllImages(dirpath)
+        for i, filename in enumerate(all_images):
             if pattern and pattern not in filename:
                 continue
             label_file = osp.splitext(filename)[0] + ".json"
@@ -2104,6 +2106,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 item.setCheckState(Qt.Unchecked)
             if LabelFile.is_validated(label_file):
                 item.setBackground(QtGui.QColor("light green"))
+            elif update_selected_file:
+                self._config["last_file"] = filename.replace("/", "\\")
+                # if i < len(all_images):
+                #     self._config["last_file"] = all_images[i + 1].replace("/", "\\")
+                # else:
+                #     self._config["last_file"] = filename.replace("/", "\\")
+                update_selected_file = False
             self.fileListWidget.addItem(item)
         self.openNextImg(load=load)
 
