@@ -4,6 +4,7 @@ import functools
 import math
 import os
 import os.path as osp
+from pathlib import Path
 import re
 import webbrowser
 
@@ -1103,7 +1104,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if self._config["last_file"]:
             try:
-                currIndex = self.imageList.index(self._config["last_file"].replace("/", "\\"))
+                last_file = Path(self._config["last_file"]).parent
+                filename = Path(self._config["last_file"]).name
+                last_file = str(last_file).replace("\\", "/") + "\\" + filename
+                currIndex = self.imageList.index(last_file)
             except Exception as e:
                 currIndex = 0
             finally:
