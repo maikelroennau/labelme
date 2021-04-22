@@ -1125,7 +1125,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for shape in self.canvas.selectedShapes:
             shape.selected = False
         self.labelList.clearSelection()
-        
+
         if self._config["sticky_mode_state"] or self._config["destructive_click_state"]:
             for selected_shape in selected_shapes:
                 for canvas_shape in self.canvas.shapes:
@@ -1486,7 +1486,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self._config["label_validation_status"] = True
             item.setBackground(QtGui.QColor("light green"))
-        
+
         if self._config["label_validation_status"] != LabelFile.is_validated(self.labelFile.filename):
             self.setDirty()
 
