@@ -2108,10 +2108,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 item.setBackground(QtGui.QColor("light green"))
             elif update_selected_file:
                 self._config["last_file"] = filename.replace("/", "\\")
-                # if i < len(all_images):
-                #     self._config["last_file"] = all_images[i + 1].replace("/", "\\")
-                # else:
-                #     self._config["last_file"] = filename.replace("/", "\\")
                 update_selected_file = False
             self.fileListWidget.addItem(item)
         self.openNextImg(load=load)
