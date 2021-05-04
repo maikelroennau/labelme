@@ -389,7 +389,7 @@ class MainWindow(QtWidgets.QMainWindow):
             shortcuts["sticky_mode"],
             icon="sticky",
             tip=self.tr("Enable deletion of polygons with a single click"),
-            enabled=True,
+            enabled=False,
             checkable=True,
             checked=self._config["sticky_mode_state"],
         )
@@ -400,7 +400,7 @@ class MainWindow(QtWidgets.QMainWindow):
             shortcuts["validate_proposed_label"],
             icon="validate",
             tip=self.tr("Mark this file label as validated"),
-            enabled=True,
+            enabled=False,
             checkable=True,
             checked=False
         )
@@ -411,7 +411,7 @@ class MainWindow(QtWidgets.QMainWindow):
             shortcuts["invalidate_proposed_label"],
             icon="invalidate",
             tip=self.tr("Mark this file label as invalidated"),
-            enabled=True,
+            enabled=False,
             checkable=True,
             checked=False
         )
@@ -894,6 +894,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actions.createLineMode.setEnabled(True)
         self.actions.createPointMode.setEnabled(True)
         self.actions.createLineStripMode.setEnabled(True)
+        self.actions.validateProposedLabel.setEnabled(True)
+        self.actions.invalidateProposedLabel.setEnabled(True)
+        self.actions.stickyMode.setEnabled(True)
         title = __appname__
         if self.filename is not None:
             title = "{} - {}".format(title, self.filename)
