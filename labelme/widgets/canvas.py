@@ -412,10 +412,11 @@ class Canvas(QtWidgets.QWidget):
 
         if self.movingShape and self.hShape:
             index = self.shapes.index(self.hShape)
-            if (
-                self.shapesBackups[-1][index].points
-                != self.shapes[index].points
-            ):
+            if len(self.shapesBackups[-1]) > index:
+                if self.shapesBackups[-1][index].points != self.shapes[index].points:
+                    self.storeShapes(override=True)
+                    self.shapeMoved.emit()
+            else:
                 self.storeShapes(override=True)
                 self.shapeMoved.emit()
 
@@ -556,6 +557,7 @@ class Canvas(QtWidgets.QWidget):
             self.selectedShapesCopy = [s.copy() for s in self.selectedShapes]
             self.boundedShiftShapes(self.selectedShapesCopy)
             self.endMove(copy=True)
+        self.storeShapes(override=True)
         return self.selectedShapes
 
     def boundedShiftShapes(self, shapes):
