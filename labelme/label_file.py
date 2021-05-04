@@ -73,6 +73,7 @@ class LabelFile(object):
             "imageData",
             "imagePath",
             "validated",
+            "invalidated",
             "shapes",  # polygonal annotations
             "flags",  # image level flags
             "imageHeight",
@@ -169,6 +170,7 @@ class LabelFile(object):
         self,
         filename,
         validated,
+        invalidated,
         shapes,
         imagePath,
         imageHeight,
@@ -190,6 +192,7 @@ class LabelFile(object):
             version=__version__,
             flags=flags,
             validated=validated,
+            invalidated=invalidated,
             shapes=shapes,
             imagePath=imagePath,
             imageData=imageData,
@@ -218,6 +221,18 @@ class LabelFile(object):
                 if "validated" in data:
                     if isinstance(data["validated"], bool):
                         return data["validated"]
+                return False
+        except Exception as e:
+            return False
+
+    @staticmethod
+    def is_invalidated(filename):
+        try:
+            with open(filename, "r") as f:
+                data = json.load(f)
+                if "invalidated" in data:
+                    if isinstance(data["invalidated"], bool):
+                        return data["invalidated"]
                 return False
         except Exception as e:
             return False

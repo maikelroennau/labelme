@@ -23,6 +23,7 @@ polygons_state: true
 sticky_mode_state: false
 destructive_click_state: false
 label_validation_status: false
+label_invalidation_status: false
 last_file: null
 
 shape:
@@ -107,3 +108,4 @@ shortcuts:
   toggle_keep_prev_mode: Ctrl+P
   sticky_mode: S
   validate_proposed_label: V
+  invalidate_proposed_label: I

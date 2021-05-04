@@ -405,6 +405,17 @@ class MainWindow(QtWidgets.QMainWindow):
             checked=False
         )
 
+        invalidateProposedLabel = action(
+            self.tr("Invalidate"),
+            self.toggleInvalidateProposedLabel,
+            shortcuts["invalidate_proposed_label"],
+            icon="invalidate",
+            tip=self.tr("Mark this file label as invalidated"),
+            enabled=True,
+            checkable=True,
+            checked=False
+        )
+
         copy = action(
             self.tr("Duplicate Polygons"),
             self.copySelectedShape,
@@ -610,6 +621,7 @@ class MainWindow(QtWidgets.QMainWindow):
             openPrevImg=openPrevImg,
             stickyMode=stickyMode,
             validateProposedLabel=validateProposedLabel,
+            invalidateProposedLabel=invalidateProposedLabel,
             fileMenuActions=(open_, opendir, save, saveAs, close, quit),
             tool=(),
             # XXX: need to add some actions here to activate the shortcut
@@ -626,6 +638,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 toggle_keep_prev_mode,
                 None,
                 validateProposedLabel,
+                invalidateProposedLabel,
                 stickyMode,
             ),
             # menu shown at right click
@@ -741,6 +754,7 @@ class MainWindow(QtWidgets.QMainWindow):
             copy,
             delete,
             validateProposedLabel,
+            invalidateProposedLabel,
             stickyMode,
             undo,
             brightnessContrast,
@@ -1288,6 +1302,7 @@ class MainWindow(QtWidgets.QMainWindow):
             lf.save(
                 filename=filename,
                 validated=self._config["label_validation_status"],
+                invalidated=self._config["label_invalidation_status"],
                 shapes=shapes,
                 imagePath=imagePath,
                 imageData=imageData,
@@ -1490,8 +1505,24 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self._config["label_validation_status"] = True
             item.setBackground(QtGui.QColor("light green"))
+            self._config["label_invalidation_status"] = False
+            self.actions.invalidateProposedLabel.setChecked(False)
 
         if self._config["label_validation_status"] != LabelFile.is_validated(self.labelFile.filename):
+            self.setDirty()
+
+    def toggleInvalidateProposedLabel(self):
+        item = self.fileListWidget.selectedItems()[0]
+        if self._config["label_invalidation_status"]:
+            self._config["label_invalidation_status"] = False
+            item.setBackground(QtGui.QColor("white"))
+        else:
+            self._config["label_invalidation_status"] = True
+            item.setBackground(QtGui.QColor("orange"))
+            self._config["label_validation_status"] = False
+            self.actions.validateProposedLabel.setChecked(False)
+
+        if self._config["label_invalidation_status"] != LabelFile.is_validated(self.labelFile.filename):
             self.setDirty()
 
     def loadFile(self, filename=None):
@@ -1618,10 +1649,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.brightnessContrast_values[self.filename] = (brightness, contrast)
         if brightness is not None or contrast is not None:
             dialog.onNewValue(None)
-        if LabelFile.is_validated(label_file):
+        if LabelFile.is_validated(label_file) and not LabelFile.is_invalidated(label_file):
             self.actions.validateProposedLabel.setChecked(True)
             self._config["label_validation_status"] = True
+            self.actions.invalidateProposedLabel.setChecked(False)
+            self._config["label_invalidation_status"] = False
+        elif LabelFile.is_invalidated(label_file) and not LabelFile.is_validated(label_file):
+            self.actions.invalidateProposedLabel.setChecked(True)
+            self._config["label_invalidation_status"] = True
+            self.actions.validateProposedLabel.setChecked(False)
+            self._config["label_validation_status"] = False
         else:
+            self.actions.invalidateProposedLabel.setChecked(False)
+            self._config["label_invalidation_status"] = False
             self.actions.validateProposedLabel.setChecked(False)
             self._config["label_validation_status"] = False
         self.paintCanvas()
@@ -2108,8 +2148,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 item.setCheckState(Qt.Checked)
             else:
                 item.setCheckState(Qt.Unchecked)
-            if LabelFile.is_validated(label_file):
+            if LabelFile.is_validated(label_file) and not LabelFile.is_invalidated(label_file):
                 item.setBackground(QtGui.QColor("light green"))
+            elif LabelFile.is_invalidated(label_file) and not LabelFile.is_validated(label_file):
+                item.setBackground(QtGui.QColor("orange"))
             elif update_selected_file:
                 self._config["last_file"] = filename.replace("/", "\\")
                 update_selected_file = False
