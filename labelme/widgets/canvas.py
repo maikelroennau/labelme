@@ -747,6 +747,8 @@ class Canvas(QtWidgets.QWidget):
             self.update()
         elif key == QtCore.Qt.Key_Return and self.canCloseShape():
             self.finalise()
+        elif key == QtCore.Qt.Key_A and ev.modifiers() == QtCore.Qt.ControlModifier:
+            self.selectShapes(self.shapes)
 
     def setLastLabel(self, text, flags):
         assert text
