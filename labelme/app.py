@@ -902,10 +902,10 @@ class MainWindow(QtWidgets.QMainWindow):
             title = "{} - {}".format(title, self.filename)
         self.setWindowTitle(title)
 
-        if self.hasLabelFile():
-            self.actions.deleteFile.setEnabled(True)
-        else:
-            self.actions.deleteFile.setEnabled(False)
+        # if self.hasLabelFile():
+        #     self.actions.deleteFile.setEnabled(True)
+        # else:
+        #     self.actions.deleteFile.setEnabled(False)
 
     def toggleActions(self, value=True):
         """Enable/Disable widgets which depend on an opened image."""
@@ -1525,7 +1525,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._config["label_validation_status"] = False
             self.actions.validateProposedLabel.setChecked(False)
 
-        if self._config["label_invalidation_status"] != LabelFile.is_validated(self.labelFile.filename):
+        if self._config["label_invalidation_status"] != LabelFile.is_invalidated(self.labelFile.filename):
             self.setDirty()
 
     def loadFile(self, filename=None):
