@@ -8,7 +8,6 @@ from pathlib import Path
 import re
 import webbrowser
 
-import imgviz
 from qtpy import QtCore
 from qtpy.QtCore import Qt
 from qtpy import QtGui
@@ -33,6 +32,7 @@ from labelme.widgets import ToolBar
 from labelme.widgets import UniqueLabelQListWidget
 from labelme.widgets import ZoomWidget
 
+from labelme.custom_colors import LABEL_COLORMAP
 
 # FIXME
 # - [medium] Set max zoom value to something big enough for FitWidth/Window
@@ -42,9 +42,6 @@ from labelme.widgets import ZoomWidget
 # - [high] Deselect shape when clicking and already selected(?)
 # - [low,maybe] Preview images on file dialogs.
 # - Zoom is too "steppy".
-
-
-LABEL_COLORMAP = imgviz.label_colormap(value=200)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -58,6 +55,7 @@ class MainWindow(QtWidgets.QMainWindow):
         output=None,
         output_file=None,
         output_dir=None,
+        open_directory=None,
     ):
         if output is not None:
             logger.warning(
@@ -774,6 +772,7 @@ class MainWindow(QtWidgets.QMainWindow):
             )
         self.output_file = output_file
         self.output_dir = output_dir
+        self.open_directory = open_directory
 
         # Application state.
         self.image = QtGui.QImage()
@@ -829,6 +828,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # self.firstStart = True
         # if self.firstStart:
         #    QWhatsThis.enterWhatsThisMode()
+
+        if self.open_directory is not None:
+            self.importDirImages(self.open_directory)
 
     def menu(self, title, actions=None):
         menu = self.menuBar().addMenu(title)

@@ -808,6 +808,12 @@ class Canvas(QtWidgets.QWidget):
         self._cursor = cursor
         QtWidgets.QApplication.setOverrideCursor(cursor)
 
+    # Uncomment for better UI cursor performance
+    # def overrideCursor(self, cursor):
+    #     if cursor != self._cursor:
+    #         self._cursor = cursor
+    #         QtWidgets.QApplication.setOverrideCursor(cursor)
+
     def restoreCursor(self):
         QtWidgets.QApplication.restoreOverrideCursor()
 

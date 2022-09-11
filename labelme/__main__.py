@@ -107,6 +107,13 @@ def main():
         help="epsilon to find nearest vertex on canvas",
         default=argparse.SUPPRESS,
     )
+    parser.add_argument(
+        "--open-directory",
+        dest="open_directory",
+        help="path to open in the start up",
+        type=str,
+        default=None
+    )
     args = parser.parse_args()
 
     if args.version:
@@ -154,6 +161,7 @@ def main():
 
     output_file = None
     output_dir = None
+    open_directory = None
     if output is not None:
         if output.endswith(".json"):
             output_file = output
@@ -174,6 +182,7 @@ def main():
         filename=filename,
         output_file=output_file,
         output_dir=output_dir,
+        open_directory=open_directory,
     )
 
     if reset_config:

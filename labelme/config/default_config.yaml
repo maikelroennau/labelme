@@ -88,12 +88,12 @@ shortcuts:
   zoom_in: [Ctrl++, Ctrl+=]
   zoom_out: Ctrl+-
   zoom_to_original: Ctrl+0
-  fit_window: Ctrl+F
+  fit_window: F
   fit_width: Ctrl+Shift+F
 
   create_polygon: Ctrl+N
   create_rectangle: Ctrl+R
-  create_circle: null
+  create_circle: Ctrl+C
   create_line: null
   create_point: null
   create_linestrip: null
