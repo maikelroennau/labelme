@@ -2175,5 +2175,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 if file.lower().endswith(tuple(extensions)):
                     relativePath = osp.join(root, file)
                     images.append(relativePath)
+            break
         images.sort(key=lambda x: x.lower())
         return images
